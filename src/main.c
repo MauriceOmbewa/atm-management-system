@@ -52,6 +52,14 @@ void mainMenu(struct User u)
     }
 };
 
+void registerUser(struct User *u)
+{
+    printf("\nEnter username:");
+    scanf("%s", u->name);
+    printf("\nEnter password:");
+    scanf("%s", u->password);
+};
+
 void initMenu(struct User *u)
 {
     int r = 0;
@@ -83,6 +91,7 @@ void initMenu(struct User *u)
         case 2:
             // student TODO : add your **Registration** function
             // here
+            registerUser(u);
             r = 1;
             break;
         case 3:
