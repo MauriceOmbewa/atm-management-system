@@ -36,5 +36,7 @@ const char *getPassword(struct User u);
 
 // system function
 void createNewAcc(struct User u);
+void updateAccount(struct User u);
+void checkSpecificAccount(struct User u);
 void mainMenu(struct User u);
 void checkAllAccounts(struct User u);
