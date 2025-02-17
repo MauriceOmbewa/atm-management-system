@@ -27,6 +27,7 @@ void mainMenu(struct User u)
         // here
         break;
     case 3:
+    checkSpecificAccount(struct User u)
         // student TODO : add your **Check the details of existing accounts** function
         // here
         break;
