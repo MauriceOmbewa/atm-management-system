@@ -304,3 +304,67 @@ void checkAllAccounts(struct User u)
     fclose(pf);
     success(u);
 }
+
+void removeAccount(struct User u)
+{
+    struct Record r;
+    char userName[50];
+    int accountNumber, found = 0;
+
+    FILE *pf = fopen(RECORDS, "r");  // Open records file for reading
+    FILE *tempFile = fopen("temp.txt", "w");  // Temporary file to store updated data
+
+    if (pf == NULL || tempFile == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    system("clear");
+    printf("\t\t===== Remove Account =====\n\n");
+
+    // Ask user for the account number
+    printf("Enter the account number to remove: ");
+    scanf("%d", &accountNumber);
+
+    // Read each account and copy to temp file, excluding the one being deleted
+    while (getAccountFromFile(pf, userName, &r))
+    {
+        if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
+        {
+            printf("\n✔ Account %d has been removed successfully!\n", accountNumber);
+            found = 1; // Account found
+            continue;  // Skip writing this account to the temp file (delete it)
+        }
+        // Write remaining accounts to temp file
+        fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
+                r.id,
+                u.id,
+                userName,
+                r.accountNbr,
+                r.deposit.month,
+                r.deposit.day,
+                r.deposit.year,
+                r.country,
+                r.phone,
+                r.amount,
+                r.accountType);
+    }
+
+    fclose(pf);
+    fclose(tempFile);
+
+    // If no account was found, notify the user and delete temp file
+    if (!found)
+    {
+        printf("\n✖ No account found with number %d for user %s.\n", accountNumber, u.name);
+        remove("temp.txt"); // Remove temp file as it's not needed
+    }
+    else
+    {
+        remove(RECORDS);          // Delete old records file
+        rename("temp.txt", RECORDS); // Rename temp file to records file
+    }
+
+    success(u); // Call success function to return to menu or exit
+}
