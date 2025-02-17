@@ -225,6 +225,57 @@ void updateAccount(struct User u)
     success(u);
 }
 
+void checkSpecificAccount(struct User u)
+{
+    struct Record r;
+    char userName[50];
+    int accountNumber, found = 0;
+
+    FILE *pf = fopen(RECORDS, "r"); // Open file for reading
+    if (pf == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    system("clear");
+    printf("\t\t===== Check Specific Account =====\n\n");
+
+    // Ask for the account number
+    printf("Enter the account number you want to check: ");
+    scanf("%d", &accountNumber);
+
+    // Search for the account in the file
+    while (getAccountFromFile(pf, userName, &r))
+    {
+        if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
+        {
+            // Print the account details
+            printf("\n✔ Account Found!\n");
+            printf("_____________________\n");
+            printf("Account number: %d\n", r.accountNbr);
+            printf("Deposit Date: %d/%d/%d\n", r.deposit.month, r.deposit.day, r.deposit.year);
+            printf("Country: %s\n", r.country);
+            printf("Phone number: %d\n", r.phone);
+            printf("Amount deposited: $%.2f\n", r.amount);
+            printf("Account Type: %s\n", r.accountType);
+            found = 1;
+            break; // Exit loop since we found the account
+        }
+    }
+
+    fclose(pf); // Close file
+
+    // If no account was found, inform the user
+    if (!found)
+    {
+        printf("\n✖ No account found with number %d for user %s.\n", accountNumber, u.name);
+    }
+
+    success(u); // Optionally call success after the process
+}
+
+
 void checkAllAccounts(struct User u)
 {
     char userName[100];
