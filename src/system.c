@@ -433,3 +433,101 @@ void transferAccountOwnership(struct User u)
 
     success(u); 
 }
+
+void makeTransaction(struct User u)
+{
+    struct Record r;
+    char userName[50];
+    int accountNumber, found = 0, transactionType;
+    double amount;
+
+    FILE *pf = fopen(RECORDS, "r");  // Open the file for reading
+    FILE *tempFile = fopen("temp.txt", "w");  // Temporary file for updates
+
+    if (pf == NULL || tempFile == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    system("clear");
+    printf("\t\t===== Make a Transaction =====\n\n");
+
+    // Ask the user for the account number
+    printf("Enter your account number: ");
+    scanf("%d", &accountNumber);
+
+    // Look for the account in the file
+    while (getAccountFromFile(pf, userName, &r))
+    {
+        if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
+        {
+            found = 1;
+            printf("\n✔ Account %d found! Current balance: $%.2lf\n", r.accountNbr, r.amount);
+            
+            // Ask user for the transaction type
+            printf("\nSelect transaction type:\n1 - Deposit\n2 - Withdraw\nEnter choice: ");
+            scanf("%d", &transactionType);
+
+            // Handle deposit
+            if (transactionType == 1)
+            {
+                printf("\nEnter deposit amount: $");
+                scanf("%lf", &amount);
+                r.amount += amount;
+                printf("\n✔ Successfully deposited $%.2lf. New balance: $%.2lf\n", amount, r.amount);
+            }
+            // Handle withdrawal
+            else if (transactionType == 2)
+            {
+                printf("\nEnter withdrawal amount: $");
+                scanf("%lf", &amount);
+                if (amount > r.amount)
+                {
+                    printf("\n✖ Insufficient funds! Transaction canceled.\n");
+                }
+                else
+                {
+                    r.amount -= amount;
+                    printf("\n✔ Successfully withdrew $%.2lf. New balance: $%.2lf\n", amount, r.amount);
+                }
+            }
+            else
+            {
+                printf("\n✖ Invalid transaction type! No changes made.\n");
+            }
+        }
+
+        // Write updated or original data to temp file
+        fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
+                r.id,
+                u.id,
+                userName,
+                r.accountNbr,
+                r.deposit.month,
+                r.deposit.day,
+                r.deposit.year,
+                r.country,
+                r.phone,
+                r.amount,
+                r.accountType);
+    }
+
+    fclose(pf);
+    fclose(tempFile);
+
+    // If account was found, update the main file
+    if (found)
+    {
+        remove(RECORDS);
+        rename("temp.txt", RECORDS);
+        printf("\n✔ Transaction completed successfully!\n");
+    }
+    else
+    {
+        printf("\n✖ No account found with number %d for user %s.\n", accountNumber, u.name);
+        remove("temp.txt"); // Remove temp file since no updates were made
+    }
+
+    success(u); // Allow the user to return to the menu or exit
+}
