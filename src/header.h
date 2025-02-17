@@ -41,3 +41,4 @@ void checkSpecificAccount(struct User u);
 void removeAccount(struct User u);
 void mainMenu(struct User u);
 void checkAllAccounts(struct User u);
+void transferAccountOwnership(struct User u);
