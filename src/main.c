@@ -39,6 +39,7 @@ void mainMenu(struct User u)
         // here
         break;
     case 6:
+        removeAccount(u);
         // student TODO : add your **Remove existing account** function
         // here
         break;
