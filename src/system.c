@@ -1,4 +1,6 @@
 #include "header.h"
+// #include <stdio.h>
+// #include <string.h>
 
 const char *RECORDS = "./data/records.txt";
 
@@ -20,10 +22,24 @@ int getAccountFromFile(FILE *ptr, char name[50], struct Record *r)
 
 void saveAccountToFile(FILE *ptr, struct User u, struct Record r)
 {
+    char line[256]; 
+    int len = 0;
+
+    rewind(ptr);
+
+    while (fgets(line, sizeof(line), ptr)) {
+        if (line[strlen(line) - 1] == '\n') { 
+            len++; 
+        }
+    }
+    r.id = (len / 2); 
+
+    fseek(ptr, 0, SEEK_END);
+
     fprintf(ptr, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
             r.id,
-	        u.id,
-	        u.name,
+            u.id,
+            u.name,
             r.accountNbr,
             r.deposit.month,
             r.deposit.day,
@@ -103,7 +119,7 @@ void createNewAcc(struct User u)
     char userName[50];
     FILE *pf = fopen(RECORDS, "a+");
 
-noAccount:
+    noAccount:
     system("clear");
     printf("\t\t\t===== New record =====\n");
 
