@@ -1,6 +1,4 @@
 #include "header.h"
-// #include <stdio.h>
-// #include <string.h>
 
 const char *RECORDS = "./data/records.txt";
 
@@ -150,6 +148,80 @@ void createNewAcc(struct User u)
     saveAccountToFile(pf, u, r);
 
     fclose(pf);
+    success(u);
+}
+
+void updateAccount(struct User u)
+{
+    struct Record r, cr;
+    char userName[50];
+    int accountNumber, found = 0;
+
+    FILE *pf = fopen(RECORDS, "r");  // Open existing file for reading
+    FILE *temp = fopen("temp.txt", "w"); // Temporary file for writing
+
+    if (pf == NULL || temp == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    system("clear");
+    printf("\t\t===== Update Account Details =====\n");
+    printf("\nEnter the account number to update: ");
+    scanf("%d", &accountNumber);
+
+    while (getAccountFromFile(pf, userName, &cr))
+    {
+        if (strcmp(userName, u.name) == 0 && cr.accountNbr == accountNumber)
+        {
+            found = 1;
+
+            printf("\nEnter updated country: ");
+            scanf("%s", r.country);
+            printf("\nEnter updated phone number: ");
+            scanf("%d", &r.phone);
+            printf("\nEnter new amount to deposit: $");
+            scanf("%lf", &r.amount);
+            printf("\nChoose new type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\nEnter your choice: ");
+            scanf("%s", r.accountType);
+
+            // Preserve other details while updating user inputs
+            r.id = cr.id;
+            r.accountNbr = cr.accountNbr;
+            r.deposit = cr.deposit;
+
+            // Write updated details
+            fprintf(temp, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
+                    r.id, u.id, u.name, r.accountNbr,
+                    r.deposit.month, r.deposit.day, r.deposit.year,
+                    r.country, r.phone, r.amount, r.accountType);
+        }
+        else
+        {
+            // Keep existing records unchanged
+            fprintf(temp, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
+                    cr.id, cr.userId, userName, cr.accountNbr,
+                    cr.deposit.month, cr.deposit.day, cr.deposit.year,
+                    cr.country, cr.phone, cr.amount, cr.accountType);
+        }
+    }
+
+    fclose(pf);
+    fclose(temp);
+
+    if (!found)
+    {
+        printf("\n✖ Account not found!\n");
+        remove("temp.txt");
+    }
+    else
+    {
+        remove(RECORDS);
+        rename("temp.txt", RECORDS);
+        printf("\n✔ Account updated successfully!\n");
+    }
+
     success(u);
 }
 
