@@ -22,6 +22,7 @@ void mainMenu(struct User u)
         createNewAcc(u);
         break;
     case 2:
+        updateAccount(u);
         // student TODO : add your **Update account information** function
         // here
         break;
