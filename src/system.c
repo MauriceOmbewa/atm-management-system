@@ -368,3 +368,68 @@ void removeAccount(struct User u)
 
     success(u); // Call success function to return to menu or exit
 }
+
+void transferAccountOwnership(struct User u)
+{
+    struct Record r;
+    char userName[50], newOwner[50];
+    int accountNumber, found = 0;
+
+    FILE *pf = fopen(RECORDS, "r"); 
+    FILE *tempFile = fopen("temp.txt", "w");  
+
+    if (pf == NULL || tempFile == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    system("clear");
+    printf("\t\t===== Transfer Account Ownership =====\n\n");
+
+    printf("Enter the account number to transfer: ");
+    scanf("%d", &accountNumber);
+
+    // Check if the account exists and belongs to the current user
+    while (getAccountFromFile(pf, userName, &r))
+    {
+        if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
+        {
+            found = 1;
+            printf("\n✔ Account %d found! Enter the new owner's username: ", accountNumber);
+            scanf("%s", newOwner); 
+            
+            // Update the owner of the account
+            strcpy(userName, newOwner);
+        }
+        fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
+                r.id,
+                u.id,
+                userName,
+                r.accountNbr,
+                r.deposit.month,
+                r.deposit.day,
+                r.deposit.year,
+                r.country,
+                r.phone,
+                r.amount,
+                r.accountType);
+    }
+
+    fclose(pf);
+    fclose(tempFile);
+
+    if (found)
+    {
+        remove(RECORDS);
+        rename("temp.txt", RECORDS);
+        printf("\n✔ Account %d has been successfully transferred to %s!\n", accountNumber, newOwner);
+    }
+    else
+    {
+        printf("\n✖ No account found with number %d for user %s.\n", accountNumber, u.name);
+        remove("temp.txt"); 
+    }
+
+    success(u); 
+}
