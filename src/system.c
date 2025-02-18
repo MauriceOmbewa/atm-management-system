@@ -389,12 +389,16 @@ void transferAccountOwnership(struct User u)
 {
     struct Record r;
     char userName[50], newOwner[50];
-    int accountNumber, found = 0;
+    int accountNumber, found = 0, newOwnerId = -1;
+    char line[100], fileUserName[50];
+    int fileUserId;
+    char password[50];
 
     FILE *pf = fopen(RECORDS, "r"); 
     FILE *tempFile = fopen("temp.txt", "w");  
+    FILE *uf = fopen("./data/users.txt", "r");
 
-    if (pf == NULL || tempFile == NULL)
+    if (pf == NULL || tempFile == NULL || uf == NULL)
     {
         perror("Error opening file");
         return;
@@ -415,12 +419,36 @@ void transferAccountOwnership(struct User u)
             printf("\n✔ Account %d found! Enter the new owner's username: ", accountNumber);
             scanf("%s", newOwner); 
             
+            // Find the user ID of the new owner
+            while (fgets(line, sizeof(line), uf))
+            {
+                sscanf(line, "%d %s %s", &fileUserId, fileUserName, password);
+                if (strcmp(fileUserName, newOwner) == 0)
+                {
+                    newOwnerId = fileUserId;
+                    printf("newownerid: %d fileusername: %s", newOwnerId, fileUserName);
+                    break;
+                }
+            }
+            // rewind(uf);
+
+            if (newOwnerId == -1)
+            {
+                printf("\n✖ New owner username not found.\n");
+                fclose(pf);
+                fclose(tempFile);
+                fclose(uf);
+                remove("temp.txt");
+                return;
+            }
+
             // Update the owner of the account
             strcpy(userName, newOwner);
+            r.id = newOwnerId;
         }
         fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
                 r.id,
-                u.id,
+                newOwnerId,
                 userName,
                 r.accountNbr,
                 r.deposit.month,
@@ -434,6 +462,7 @@ void transferAccountOwnership(struct User u)
 
     fclose(pf);
     fclose(tempFile);
+    fclose(uf);
 
     if (found)
     {
