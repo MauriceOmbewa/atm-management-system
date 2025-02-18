@@ -25,29 +25,21 @@ void mainMenu(struct User u)
         break;
     case 2:
         updateAccount(u);
-        // student TODO : add your **Update account information** function
-        // here
         break;
     case 3:
     checkSpecificAccount(u);
-        // student TODO : add your **Check the details of existing accounts** function
-        // here
         break;
     case 4:
         checkAllAccounts(u);
         break;
     case 5:
-        // student TODO : add your **Make transaction** function
-        // here
+        makeTransaction(u);
         break;
     case 6:
         removeAccount(u);
-        // student TODO : add your **Remove existing account** function
-        // here
         break;
     case 7:
-        // student TODO : add your **Transfer owner** function
-        // here
+        transferAccountOwnership(u);
         break;
     case 8:
         exit(1);
@@ -60,7 +52,7 @@ void mainMenu(struct User u)
 void registerUser(struct User *u)
 {
     username_exists:
-    FILE *file = fopen(USERS_FILE, "r"); // Open the file in read mode to check for existing usernames
+    FILE *file = fopen(USERS_FILE, "r");
     if (file == NULL)
     {
         // If file doesn't exist, assume no users are registered yet
@@ -72,17 +64,15 @@ void registerUser(struct User *u)
         }
     }
 
-    // Get new user details first
     printf("\nEnter username: ");
     scanf("%s", u->name);
     printf("\nEnter password: ");
     scanf("%s", u->password);
 
     struct User tempUser;
-    int lastId = -1; // Start with -1 so first user gets ID 0
+    int lastId = -1;
     int usernameExists = 0;
 
-    // Read existing users and check if the username already exists
     while (fscanf(file, "%d %s %s\n", &tempUser.id, tempUser.name, tempUser.password) == 3)
     {
         if (strcmp(tempUser.name, u->name) == 0) // Compare scanned username with existing usernames
