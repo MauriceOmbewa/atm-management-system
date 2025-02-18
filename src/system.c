@@ -116,13 +116,28 @@ void createNewAcc(struct User u)
     struct Record cr;
     char userName[50];
     FILE *pf = fopen(RECORDS, "a+");
+    FILE *uf = fopen("./data/users.txt", "r");
+    char line[100];
+    char fileUserName[50];
+    char password[50];
+    int fileUserId;
 
     noAccount:
     system("clear");
     printf("\t\t\t===== New record =====\n");
 
-    printf("\nEnter username:");
-    scanf("%s", u.name);
+    // Find the user ID from users.txt
+    while (fgets(line, sizeof(line), uf))
+    {
+        sscanf(line, "%d %s %s", &fileUserId, fileUserName, password);
+        if (strcmp(fileUserName, u.name) == 0)
+        {
+            u.id = fileUserId;
+            break;
+        }
+    }
+    rewind(uf);
+
     printf("\nEnter today's date(mm/dd/yyyy):");
     scanf("%d/%d/%d", &r.deposit.month, &r.deposit.day, &r.deposit.year);
     printf("\nEnter the account number:");
@@ -148,6 +163,7 @@ void createNewAcc(struct User u)
     saveAccountToFile(pf, u, r);
 
     fclose(pf);
+    fclose(uf);
     success(u);
 }
 
