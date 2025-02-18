@@ -1,5 +1,7 @@
 #include "header.h"
 
+#define USERS_FILE "./data/users.txt"
+
 void mainMenu(struct User u)
 {
     int option;
@@ -35,7 +37,6 @@ void mainMenu(struct User u)
         checkAllAccounts(u);
         break;
     case 5:
-        makeTransaction(u);
         // student TODO : add your **Make transaction** function
         // here
         break;
@@ -45,7 +46,6 @@ void mainMenu(struct User u)
         // here
         break;
     case 7:
-        transferAccountOwnership(u);
         // student TODO : add your **Transfer owner** function
         // here
         break;
@@ -59,11 +59,57 @@ void mainMenu(struct User u)
 
 void registerUser(struct User *u)
 {
-    printf("\nEnter username:");
+    username_exists:
+    FILE *file = fopen(USERS_FILE, "r"); // Open the file in read mode to check for existing usernames
+    if (file == NULL)
+    {
+        // If file doesn't exist, assume no users are registered yet
+        file = fopen(USERS_FILE, "a+");
+        if (file == NULL)
+        {
+            perror("Error opening file");
+            return;
+        }
+    }
+
+    // Get new user details first
+    printf("\nEnter username: ");
     scanf("%s", u->name);
-    printf("\nEnter password:");
+    printf("\nEnter password: ");
     scanf("%s", u->password);
-};
+
+    struct User tempUser;
+    int lastId = -1; // Start with -1 so first user gets ID 0
+    int usernameExists = 0;
+
+    // Read existing users and check if the username already exists
+    while (fscanf(file, "%d %s %s\n", &tempUser.id, tempUser.name, tempUser.password) == 3)
+    {
+        if (strcmp(tempUser.name, u->name) == 0) // Compare scanned username with existing usernames
+        {
+            printf("\n✖ Username '%s' already exists. Try another.\n", u->name);
+            goto username_exists;
+        }
+        lastId = tempUser.id; // Keep track of last user ID
+    }
+    fclose(file);
+
+    // Assign new user ID
+    u->id = lastId + 1;
+
+    file = fopen(USERS_FILE, "a");
+    if (file == NULL)
+    {
+        perror("Error opening file for writing");
+        return;
+    }
+
+    fprintf(file, "%d %s %s\n", u->id, u->name, u->password);
+    printf("\n✔ User '%s' registered successfully with ID %d!\n", u->name, u->id);
+
+    fclose(file);
+    return;
+}
 
 void initMenu(struct User *u)
 {
