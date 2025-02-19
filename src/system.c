@@ -552,12 +552,12 @@ void makeTransaction(struct User u)
     // Look for the account in the file
     while (getAccountFromFile(pf, userName, &r))
     {
-        if ((strcmp(r.accountType, "fixed01") == 0 )|| (strcmp(r.accountType, "fixed02") == 0 ) || (strcmp(r.accountType, "fixed03") == 0 )){
-            printf("Cannot make transactions in a fixed account\n\n");
-            success(u);
-        }
         if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
         {
+            if ((strcmp(r.accountType, "fixed01") == 0 )|| (strcmp(r.accountType, "fixed02") == 0 ) || (strcmp(r.accountType, "fixed03") == 0 )){
+                printf("\n\nCannot make transactions in a fixed account\n\n");
+                success(u);
+            }
             found = 1;
             printf("\n✔ Account %d found! Current balance: $%.2lf\n", r.accountNbr, r.amount);
             
@@ -597,7 +597,7 @@ void makeTransaction(struct User u)
         // Write updated or original data to temp file
         fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
                 r.id,
-                u.id,
+                r.userId,
                 userName,
                 r.accountNbr,
                 r.deposit.month,
