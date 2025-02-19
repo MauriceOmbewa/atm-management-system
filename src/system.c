@@ -393,45 +393,50 @@ void transferAccountOwnership(struct User u)
     char line[100], fileUserName[50];
     int fileUserId;
     char password[50];
-
-    FILE *pf = fopen(RECORDS, "r"); 
-    FILE *tempFile = fopen("temp.txt", "w");  
+    int recordIndex; // For tracking the record index in the file
+    
+    FILE *pf = fopen(RECORDS, "r");
+    FILE *tempFile = fopen("temp.txt", "w");
     FILE *uf = fopen("./data/users.txt", "r");
-
+    
     if (pf == NULL || tempFile == NULL || uf == NULL)
     {
         perror("Error opening file");
         return;
     }
-
+    
     system("clear");
     printf("\t\t===== Transfer Account Ownership =====\n\n");
-
     printf("Enter the account number to transfer: ");
     scanf("%d", &accountNumber);
-
+    
+    // Reset file pointer to beginning
+    rewind(pf);
+    
     // Check if the account exists and belongs to the current user
-    while (getAccountFromFile(pf, userName, &r))
+    while (fscanf(pf, "%d %d %s %d %d/%d/%d %s %d %lf %s\n",
+                  &recordIndex, &r.id, userName, &r.accountNbr,
+                  &r.deposit.month, &r.deposit.day, &r.deposit.year,
+                  r.country, &r.phone, &r.amount, r.accountType) == 11)
     {
         if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
         {
             found = 1;
             printf("\n✔ Account %d found! Enter the new owner's username: ", accountNumber);
-            scanf("%s", newOwner); 
+            scanf("%s", newOwner);
             
             // Find the user ID of the new owner
+            rewind(uf);
             while (fgets(line, sizeof(line), uf))
             {
                 sscanf(line, "%d %s %s", &fileUserId, fileUserName, password);
                 if (strcmp(fileUserName, newOwner) == 0)
                 {
                     newOwnerId = fileUserId;
-                    printf("newownerid: %d fileusername: %s", newOwnerId, fileUserName);
                     break;
                 }
             }
-            // rewind(uf);
-
+            
             if (newOwnerId == -1)
             {
                 printf("\n✖ New owner username not found.\n");
@@ -441,15 +446,12 @@ void transferAccountOwnership(struct User u)
                 remove("temp.txt");
                 return;
             }
-
-            // Update the owner of the account
-            strcpy(userName, newOwner);
-            r.id = newOwnerId;
-        }
-        fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
-                r.id,
-                newOwnerId,
-                userName,
+            
+            // Write the transferred account with updated owner but SAME record index
+            fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
+                recordIndex,      // Keep original index
+                newOwnerId,       // Update to new owner's ID
+                newOwner,         // Update to new owner's name
                 r.accountNbr,
                 r.deposit.month,
                 r.deposit.day,
@@ -458,12 +460,29 @@ void transferAccountOwnership(struct User u)
                 r.phone,
                 r.amount,
                 r.accountType);
+        }
+        else
+        {
+            // Copy the original record to temp file without changes
+            fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
+                recordIndex,     // Keep original index
+                r.id,            // Keep original user ID
+                userName,        // Keep original username
+                r.accountNbr,
+                r.deposit.month,
+                r.deposit.day,
+                r.deposit.year,
+                r.country,
+                r.phone,
+                r.amount,
+                r.accountType);
+        }
     }
-
+    
     fclose(pf);
     fclose(tempFile);
     fclose(uf);
-
+    
     if (found)
     {
         remove(RECORDS);
@@ -473,10 +492,10 @@ void transferAccountOwnership(struct User u)
     else
     {
         printf("\n✖ No account found with number %d for user %s.\n", accountNumber, u.name);
-        remove("temp.txt"); 
+        remove("temp.txt");
     }
-
-    success(u); 
+    
+    success(u);
 }
 
 void makeTransaction(struct User u)
