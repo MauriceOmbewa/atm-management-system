@@ -169,63 +169,76 @@ void createNewAcc(struct User u)
 
 void updateAccount(struct User u)
 {
-    struct Record r, cr;
+    struct Record cr;
     char userName[50];
     int accountNumber, found = 0;
-
-    FILE *pf = fopen(RECORDS, "r");  // Open existing file for reading
+    int updateChoice;
+    int originalUserId; // Store the original userId to preserve it
+    
+    FILE *pf = fopen(RECORDS, "r"); // Open existing file for reading
     FILE *temp = fopen("temp.txt", "w"); // Temporary file for writing
-
     if (pf == NULL || temp == NULL)
     {
         perror("Error opening file");
         return;
     }
-
     system("clear");
     printf("\t\t===== Update Account Details =====\n");
     printf("\nEnter the account number to update: ");
     scanf("%d", &accountNumber);
-
+    
     while (getAccountFromFile(pf, userName, &cr))
     {
+        // Store the original userId from the file
+        originalUserId = cr.userId;
+        
         if (strcmp(userName, u.name) == 0 && cr.accountNbr == accountNumber)
         {
             found = 1;
-
-            printf("\nEnter updated country: ");
-            scanf("%s", r.country);
-            printf("\nEnter updated phone number: ");
-            scanf("%d", &r.phone);
-            printf("\nEnter new amount to deposit: $");
-            scanf("%lf", &r.amount);
-            printf("\nChoose new type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\nEnter your choice: ");
-            scanf("%s", r.accountType);
-
-            // Preserve other details while updating user inputs
-            r.id = cr.id;
-            r.accountNbr = cr.accountNbr;
-            r.deposit = cr.deposit;
-
-            // Write updated details
+            
+            printf("\nAccount found! Choose what to update:\n\n");
+            printf("1. Update country\n");
+            printf("2. Update phone number\n\n");
+            printf("Enter your choice (1 or 2): ");
+            scanf("%d", &updateChoice);
+            
+            if (updateChoice == 1)
+            {
+                printf("\nEnter updated country: ");
+                scanf("%s", cr.country);
+                printf("\n✔ Country updated successfully!\n");
+            }
+            else if (updateChoice == 2)
+            {
+                printf("\nEnter updated phone number: ");
+                scanf("%d", &cr.phone);
+                printf("\n✔ Phone number updated successfully!\n");
+            }
+            else
+            {
+                printf("\n✖ Invalid choice. No updates made.\n");
+            }
+            
+            // Write the record with just the updated field
+            // CRITICAL: Use originalUserId to ensure it remains unchanged
             fprintf(temp, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
-                    r.id, u.id, u.name, r.accountNbr,
-                    r.deposit.month, r.deposit.day, r.deposit.year,
-                    r.country, r.phone, r.amount, r.accountType);
+                cr.id, originalUserId, userName, cr.accountNbr,
+                cr.deposit.month, cr.deposit.day, cr.deposit.year,
+                cr.country, cr.phone, cr.amount, cr.accountType);
         }
         else
         {
             // Keep existing records unchanged
             fprintf(temp, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
-                    cr.id, cr.userId, userName, cr.accountNbr,
-                    cr.deposit.month, cr.deposit.day, cr.deposit.year,
-                    cr.country, cr.phone, cr.amount, cr.accountType);
+                cr.id, originalUserId, userName, cr.accountNbr,
+                cr.deposit.month, cr.deposit.day, cr.deposit.year,
+                cr.country, cr.phone, cr.amount, cr.accountType);
         }
     }
-
+    
     fclose(pf);
     fclose(temp);
-
+    
     if (!found)
     {
         printf("\n✖ Account not found!\n");
@@ -235,9 +248,9 @@ void updateAccount(struct User u)
     {
         remove(RECORDS);
         rename("temp.txt", RECORDS);
-        printf("\n✔ Account updated successfully!\n");
+        printf("\nAccount information has been updated in the record.\n");
     }
-
+    
     success(u);
 }
 
