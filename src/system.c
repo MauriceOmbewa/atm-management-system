@@ -288,6 +288,21 @@ void checkSpecificAccount(struct User u)
             printf("Phone number: %d\n", r.phone);
             printf("Amount deposited: $%.2f\n", r.amount);
             printf("Account Type: %s\n", r.accountType);
+
+            if (strcmp(r.accountType, "current") == 0) {
+                printf("\n\nYou will not get interest because this account is of type %s\n", r.accountType);
+            } else if (strcmp(r.accountType, "saving") == 0) { 
+                printf("\n\nYou will gain an interest of $5.84 on day %d of every month\n", r.deposit.day);
+            } else if (strcmp(r.accountType, "fixed01") == 0) {
+                int year = r.deposit.year + 1;
+                printf("\n\nYou will gain an interest of $40.05 on %d/%d/%d\n", r.deposit.month, r.deposit.day, year);
+            } else if (strcmp(r.accountType, "fixed02") == 0) {
+                int year = r.deposit.year + 2;
+                printf("\n\nYou will gain an interest of $100.12 on %d/%d/%d\n", r.deposit.month, r.deposit.day, year);
+            } else if (strcmp(r.accountType, "fixed03") == 0) {
+                int year = r.deposit.year + 5;
+                printf("\n\nYou will gain an interest of $240.29 on %d/%d/%d\n", r.deposit.month, r.deposit.day, year);
+            }
             found = 1;
             break; // Exit loop since we found the account
         }
