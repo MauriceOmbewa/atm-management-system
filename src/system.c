@@ -552,6 +552,10 @@ void makeTransaction(struct User u)
     // Look for the account in the file
     while (getAccountFromFile(pf, userName, &r))
     {
+        if ((strcmp(r.accountType, "fixed01") == 0 )|| (strcmp(r.accountType, "fixed02") == 0 ) || (strcmp(r.accountType, "fixed03") == 0 )){
+            printf("Cannot make transactions in a fixed account\n\n");
+            success(u);
+        }
         if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
         {
             found = 1;
