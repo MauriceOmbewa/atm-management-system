@@ -370,6 +370,7 @@ void removeAccount(struct User u)
     // Ask user for the account number
     printf("Enter the account number to remove: ");
     scanf("%d", &accountNumber);
+    int indexid = -1;
 
     // Read each account and copy to temp file, excluding the one being deleted
     while (getAccountFromFile(pf, userName, &r))
@@ -380,10 +381,11 @@ void removeAccount(struct User u)
             found = 1; // Account found
             continue;  // Skip writing this account to the temp file (delete it)
         }
+        indexid++;
         // Write remaining accounts to temp file
         fprintf(tempFile, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
-                r.id,
-                u.id,
+                indexid,
+                r.userId,
                 userName,
                 r.accountNbr,
                 r.deposit.month,
