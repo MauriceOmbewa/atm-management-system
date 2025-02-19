@@ -241,7 +241,7 @@ void updateAccount(struct User u)
     
     if (!found)
     {
-        printf("\n✖ Account not found!\n");
+        printf("\n✖ Account does not exist!\n");
         remove("temp.txt");
     }
     else
