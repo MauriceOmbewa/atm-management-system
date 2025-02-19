@@ -300,7 +300,7 @@ void checkSpecificAccount(struct User u)
                 int year = r.deposit.year + 2;
                 printf("\n\nYou will gain an interest of $100.12 on %d/%d/%d\n", r.deposit.month, r.deposit.day, year);
             } else if (strcmp(r.accountType, "fixed03") == 0) {
-                int year = r.deposit.year + 5;
+                int year = r.deposit.year + 3;
                 printf("\n\nYou will gain an interest of $240.29 on %d/%d/%d\n", r.deposit.month, r.deposit.day, year);
             }
             found = 1;
