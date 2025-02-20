@@ -110,7 +110,7 @@ void initMenu(struct User *u)
     printf("\n\t\t[1]- login\n");
     printf("\n\t\t[2]- register\n");
     printf("\n\t\t[3]- exit\n");
-
+invalid:
     scanf("%d", &option);
     switch (option)
     {
@@ -143,6 +143,7 @@ void initMenu(struct User *u)
 
     default:
         printf("Insert a valid operation!\n");
+        goto invalid;
     }
 }
 
