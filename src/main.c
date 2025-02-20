@@ -64,8 +64,31 @@ void registerUser(struct User *u)
         }
     }
 
-    printf("\nEnter username: ");
-    scanf("%s", u->name);
+    int validUsername;
+    do {
+        validUsername = 1;
+        printf("\nEnter username: ");
+        scanf("%s", u->name);
+
+        // Check if username is strictly made of alphabets and has at least 2 alphabets
+        if (strlen(u->name) < 2)
+        {
+            printf("\n✖ Username must have at least 2 alphabets. Try again.\n");
+            validUsername = 0;
+            continue;
+        }
+
+        for (int i = 0; i < strlen(u->name); i++)
+        {
+            if (!isalpha(u->name[i]))
+            {
+                printf("\n✖ Username must be strictly made of alphabets. Try again.\n");
+                validUsername = 0;
+                break;
+            }
+        }
+    } while (!validUsername);
+
     printf("\nEnter password: ");
     scanf("%s", u->password);
 
@@ -103,18 +126,31 @@ void registerUser(struct User *u)
 
 void initMenu(struct User *u)
 {
-    int option;
+    char option[10];
     system("clear");
     printf("\n\n\t\t======= ATM =======\n");
     printf("\n\t\t-->> Feel free to login / register :\n");
     printf("\n\t\t[1]- login\n");
     printf("\n\t\t[2]- register\n");
     printf("\n\t\t[3]- exit\n");
-invalid:
-    scanf("%d", &option);
-    switch (option)
+
+    while (1)
     {
-    case 1:
+        printf("Enter your option: ");
+        scanf("%s", option);
+
+        if (strlen(option) != 1 || option[0] < '1' || option[0] > '3')
+        {
+            printf("Invalid input! Please enter a single digit number (1, 2, or 3).\n");
+            continue;
+        }
+
+        break;
+    }
+
+    switch (option[0])
+    {
+    case '1':
         loginMenu(u->name, u->password);
         const char *savedPassword = getPassword(*u);
         if (savedPassword == NULL)
@@ -134,16 +170,15 @@ invalid:
         }
         return;
 
-    case 2:
+    case '2':
         registerUser(u);
         return;
 
-    case 3:
+    case '3':
         exit(0);
 
     default:
         printf("Insert a valid operation!\n");
-        goto invalid;
     }
 }
 
