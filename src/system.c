@@ -1,5 +1,4 @@
 #include "header.h"
-#include <ctype.h>
 
 const char *RECORDS = "./data/records.txt";
 
@@ -91,10 +90,17 @@ void stayOrReturn(int notGood, void f(struct User u), struct User u)
 void success(struct User u)
 {
     int option;
+    char input[10];
     printf("\n✔ Success!\n\n");
 invalid:
     printf("Enter 1 to go to the main menu and 0 to exit!\n");
-    scanf("%d", &option);
+    fgets(input, sizeof(input), stdin);
+    if (strchr(input, ' ') != NULL)
+    {
+        printf("\n✖ Input contains space. Please try again.\n");
+        goto invalid;
+    }
+    sscanf(input, "%d", &option);
     system("clear");
     if (option == 1)
     {
@@ -122,6 +128,7 @@ void createNewAcc(struct User u)
     char fileUserName[50];
     char password[50];
     int fileUserId;
+    char input[100];
 
 noAccount:
     system("clear");
@@ -142,9 +149,9 @@ noAccount:
     // Validate Date Input
     while (1)
     {
-        char extra;
         printf("\nEnter today's date (mm/dd/yyyy): ");
-        if (scanf("%d/%d/%d%c", &r.deposit.month, &r.deposit.day, &r.deposit.year, &extra) == 4 && extra == '\n')
+        fgets(input, sizeof(input), stdin);
+        if (sscanf(input, "%d/%d/%d", &r.deposit.month, &r.deposit.day, &r.deposit.year) == 3)
         {
             if (r.deposit.month >= 1 && r.deposit.month <= 12 &&
                 r.deposit.day >= 1 && r.deposit.day <= 31 &&
@@ -160,23 +167,21 @@ noAccount:
         else
         {
             printf("✖ Invalid format. Use mm/dd/yyyy.\n");
-            while (getchar() != '\n'); // Clear input buffer
         }
     }
 
     // Validate Account Number
     while (1)
     {
-        char extra;
         printf("\nEnter the account number: ");
-        if (scanf("%d%c", &r.accountNbr, &extra) == 2 && extra == '\n')
+        fgets(input, sizeof(input), stdin);
+        if (sscanf(input, "%d", &r.accountNbr) == 1)
         {
             break;
         }
         else
         {
             printf("\n✖ Invalid account number. Please enter an integer.\n");
-            while (getchar() != '\n'); // Clear input buffer
         }
     }
 
@@ -195,7 +200,8 @@ noAccount:
     {
         int valid = 1;
         printf("\nEnter the country: ");
-        scanf("%s", r.country);
+        fgets(r.country, sizeof(r.country), stdin);
+        r.country[strcspn(r.country, "\n")] = 0; // Remove newline character
         for (int i = 0; r.country[i] != '\0'; i++)
         {
             if (!isalpha(r.country[i]))
@@ -213,25 +219,24 @@ noAccount:
     // Validate Phone Number
     while (1)
     {
-        char extra;
         printf("\nEnter the phone number (9 digits): ");
-        if (scanf("%d%c", &r.phone, &extra) == 2 && extra == '\n' && r.phone >= 100000000 && r.phone <= 999999999)
+        fgets(input, sizeof(input), stdin);
+        if (sscanf(input, "%d", &r.phone) == 1 && r.phone >= 100000000 && r.phone <= 999999999)
         {
             break;
         }
         else
         {
             printf("✖ Invalid phone number. Please enter exactly 9 digits.\n");
-            while (getchar() != '\n'); // Clear input buffer
         }
     }
 
     // Validate Deposit Amount
     while (1)
     {
-        char extra;
         printf("\nEnter amount to deposit (max $1,000,000): $");
-        if (scanf("%lf%c", &r.amount, &extra) == 2 && extra == '\n')
+        fgets(input, sizeof(input), stdin);
+        if (sscanf(input, "%lf", &r.amount) == 1)
         {
             if (r.amount >= 0 && r.amount <= 1000000) break;
             else printf("✖ Amount must be between $0 and $1,000,000.\n");
@@ -239,7 +244,6 @@ noAccount:
         else
         {
             printf("✖ Invalid amount. Please enter a valid number.\n");
-            while (getchar() != '\n'); // Clear input buffer
         }
     }
 
@@ -247,7 +251,8 @@ noAccount:
     while (1)
     {
         printf("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01 (1 year)\n\t-> fixed02 (2 years)\n\t-> fixed03 (3 years)\n\n\tEnter your choice: ");
-        scanf("%s", r.accountType);
+        fgets(r.accountType, sizeof(r.accountType), stdin);
+        r.accountType[strcspn(r.accountType, "\n")] = 0; // Remove newline character
         if (strcmp(r.accountType, "saving") == 0 || strcmp(r.accountType, "current") == 0 ||
             strcmp(r.accountType, "fixed01") == 0 || strcmp(r.accountType, "fixed02") == 0 ||
             strcmp(r.accountType, "fixed03") == 0)
@@ -275,7 +280,8 @@ void updateAccount(struct User u)
     int accountNumber, found = 0;
     int updateChoice;
     int originalUserId; // Store the original userId to preserve it
-    
+    char input[100]; // Buffer for input
+
     FILE *pf = fopen(RECORDS, "r"); // Open existing file for reading
     FILE *temp = fopen("temp.txt", "w"); // Temporary file for writing
     if (pf == NULL || temp == NULL)
@@ -286,7 +292,16 @@ void updateAccount(struct User u)
     system("clear");
     printf("\t\t===== Update Account Details =====\n");
     printf("\nEnter the account number to update: ");
-    scanf("%d", &accountNumber);
+    fgets(input, sizeof(input), stdin);
+    if (strchr(input, ' ') != NULL)
+    {
+        printf("\n✖ Input contains space. Please try again.\n");
+        fclose(pf);
+        fclose(temp);
+        remove("temp.txt");
+        return;
+    }
+    sscanf(input, "%d", &accountNumber);
     
     while (getAccountFromFile(pf, userName, &cr))
     {
@@ -301,7 +316,16 @@ void updateAccount(struct User u)
             printf("1. Update country\n");
             printf("2. Update phone number\n\n");
             printf("Enter your choice (1 or 2): ");
-            scanf("%d", &updateChoice);
+            fgets(input, sizeof(input), stdin);
+            if (strchr(input, ' ') != NULL)
+            {
+                printf("\n✖ Input contains space. Please try again.\n");
+                fclose(pf);
+                fclose(temp);
+                remove("temp.txt");
+                return;
+            }
+            sscanf(input, "%d", &updateChoice);
             
             if (updateChoice == 1)
             {
@@ -309,7 +333,16 @@ void updateAccount(struct User u)
                 {
                     int valid = 1;
                     printf("\nEnter updated country: ");
-                    scanf("%s", cr.country);
+                    fgets(cr.country, sizeof(cr.country), stdin);
+                    if (strchr(cr.country, ' ') != NULL)
+                    {
+                        printf("\n✖ Input contains space. Please try again.\n");
+                        fclose(pf);
+                        fclose(temp);
+                        remove("temp.txt");
+                        return;
+                    }
+                    cr.country[strcspn(cr.country, "\n")] = 0; // Remove newline character
                     for (int i = 0; cr.country[i] != '\0'; i++)
                     {
                         if (!isalpha(cr.country[i]))
@@ -321,6 +354,7 @@ void updateAccount(struct User u)
                     if (valid)
                     {
                         printf("\n✔ Country updated successfully!\n");
+                        goto done;
                         break;
                     }
                     else
@@ -333,17 +367,25 @@ void updateAccount(struct User u)
             {
                 while (1)
                 {
-                    char extra;
                     printf("\nEnter updated phone number (9 digits): ");
-                    if (scanf("%d%c", &cr.phone, &extra) == 2 && extra == '\n' && cr.phone >= 100000000 && cr.phone <= 999999999)
+                    fgets(input, sizeof(input), stdin);
+                    if (strchr(input, ' ') != NULL)
+                    {
+                        printf("\n✖ Input contains space. Please try again.\n");
+                        fclose(pf);
+                        fclose(temp);
+                        remove("temp.txt");
+                        return;
+                    }
+                    if (sscanf(input, "%d", &cr.phone) == 1 && cr.phone >= 100000000 && cr.phone <= 999999999)
                     {
                         printf("\n✔ Phone number updated successfully!\n");
+                        goto done;
                         break;
                     }
                     else
                     {
                         printf("\n✖ Invalid phone number. Please enter exactly 9 digits.\n");
-                        while (getchar() != '\n'); // Clear input buffer
                     }
                 }
             }
@@ -351,9 +393,7 @@ void updateAccount(struct User u)
             {
                 printf("\n✖ Invalid choice. No updates made.\n");
             }
-            
-            // Write the record with just the updated field
-            // CRITICAL: Use originalUserId to ensure it remains unchanged
+            done:
             fprintf(temp, "%d %d %s %d %d/%d/%d %s %d %.2lf %s\n\n",
                 cr.id, originalUserId, userName, cr.accountNbr,
                 cr.deposit.month, cr.deposit.day, cr.deposit.year,
@@ -383,7 +423,7 @@ void updateAccount(struct User u)
         rename("temp.txt", RECORDS);
         printf("\nAccount information has been updated in the record.\n");
     }
-    
+
     success(u);
 }
 
@@ -392,6 +432,7 @@ void checkSpecificAccount(struct User u)
     struct Record r;
     char userName[50];
     int accountNumber, found = 0;
+    char input[100]; // Buffer for input
 
     FILE *pf = fopen(RECORDS, "r"); // Open file for reading
     if (pf == NULL)
@@ -405,7 +446,14 @@ void checkSpecificAccount(struct User u)
 
     // Ask for the account number
     printf("Enter the account number you want to check: ");
-    scanf("%d", &accountNumber);
+    fgets(input, sizeof(input), stdin);
+    if (strchr(input, ' ') != NULL)
+    {
+        printf("\n✖ Input contains space. Please try again.\n");
+        fclose(pf);
+        return;
+    }
+    sscanf(input, "%d", &accountNumber);
 
     // Search for the account in the file
     while (getAccountFromFile(pf, userName, &r))
@@ -487,6 +535,7 @@ void removeAccount(struct User u)
     struct Record r;
     char userName[50];
     int accountNumber, found = 0;
+    char input[100]; // Buffer for input
 
     FILE *pf = fopen(RECORDS, "r");  // Open records file for reading
     FILE *tempFile = fopen("temp.txt", "w");  // Temporary file to store updated data
@@ -502,7 +551,16 @@ void removeAccount(struct User u)
 
     // Ask user for the account number
     printf("Enter the account number to remove: ");
-    scanf("%d", &accountNumber);
+    fgets(input, sizeof(input), stdin);
+    if (strchr(input, ' ') != NULL)
+    {
+        printf("\n✖ Input contains space. Please try again.\n");
+        fclose(pf);
+        fclose(tempFile);
+        remove("temp.txt");
+        return;
+    }
+    sscanf(input, "%d", &accountNumber);
     int indexid = -1;
 
     // Read each account and copy to temp file, excluding the one being deleted
@@ -557,6 +615,7 @@ void transferAccountOwnership(struct User u)
     int fileUserId;
     char password[50];
     int recordIndex; // For tracking the record index in the file
+    char input[100]; // Buffer for input
     
     FILE *pf = fopen(RECORDS, "r");
     FILE *tempFile = fopen("temp.txt", "w");
@@ -571,7 +630,17 @@ void transferAccountOwnership(struct User u)
     system("clear");
     printf("\t\t===== Transfer Account Ownership =====\n\n");
     printf("Enter the account number to transfer: ");
-    scanf("%d", &accountNumber);
+    fgets(input, sizeof(input), stdin);
+    if (strchr(input, ' ') != NULL || strspn(input, "0123456789\n") != strlen(input))
+    {
+        printf("\n✖ Input must be a valid integer without spaces. Please try again.\n");
+        fclose(pf);
+        fclose(tempFile);
+        fclose(uf);
+        remove("temp.txt");
+        return;
+    }
+    sscanf(input, "%d", &accountNumber);
     
     // Reset file pointer to beginning
     rewind(pf);
@@ -585,8 +654,32 @@ void transferAccountOwnership(struct User u)
         if (strcmp(userName, u.name) == 0 && r.accountNbr == accountNumber)
         {
             found = 1;
-            printf("\n✔ Account %d found! Enter the new owner's username: ", accountNumber);
-            scanf("%s", newOwner);
+            printf("\n✔ Account %d found!", accountNumber);
+            while (1)
+            {
+                int valid = 1;
+                printf("\n\nEnter the new owner's username: ");
+                fgets(newOwner, sizeof(newOwner), stdin);
+                if (strchr(newOwner, ' ') != NULL)
+                {
+                    printf("\n✖ Input contains space. Please try again.\n");
+                    continue;
+                }
+                newOwner[strcspn(newOwner, "\n")] = 0; // Remove newline character
+                for (int i = 0; newOwner[i] != '\0'; i++)
+                {
+                    if (!isalpha(newOwner[i]))
+                    {
+                        valid = 0;
+                        break;
+                    }
+                }
+                if (valid)
+                    break;
+                else
+                    printf("\n✖ Username must contain only alphabet characters. Please try again.\n");
+            }
+            newOwner[strcspn(newOwner, "\n")] = 0; // Remove newline character
             
             // Find the user ID of the new owner
             rewind(uf);
@@ -667,6 +760,7 @@ void makeTransaction(struct User u)
     char userName[50];
     int accountNumber, found = 0, transactionType;
     double amount;
+    char input[100]; // Buffer for input
 
     FILE *pf = fopen(RECORDS, "r");  // Open the file for reading
     FILE *tempFile = fopen("temp.txt", "w");  // Temporary file for updates
@@ -682,7 +776,16 @@ void makeTransaction(struct User u)
 
     // Ask the user for the account number
     printf("Enter your account number: ");
-    scanf("%d", &accountNumber);
+    fgets(input, sizeof(input), stdin);
+    if (strchr(input, ' ') != NULL)
+    {
+        printf("\n✖ Input contains space. Please try again.\n");
+        fclose(pf);
+        fclose(tempFile);
+        remove("temp.txt");
+        return;
+    }
+    sscanf(input, "%d", &accountNumber);
 
     // Look for the account in the file
     while (getAccountFromFile(pf, userName, &r))
@@ -698,22 +801,60 @@ void makeTransaction(struct User u)
             
             // Ask user for the transaction type
             printf("\nSelect transaction type:\n1 - Deposit\n2 - Withdraw\nEnter choice: ");
-            scanf("%d", &transactionType);
+            fgets(input, sizeof(input), stdin);
+            if (strchr(input, ' ') != NULL)
+            {
+                printf("\n✖ Input contains space. Please try again.\n");
+                fclose(pf);
+                fclose(tempFile);
+                remove("temp.txt");
+                return;
+            }
+            sscanf(input, "%d", &transactionType);
 
             // Handle deposit
             if (transactionType == 1)
             {
                 printf("\nEnter deposit amount: $");
-                scanf("%lf", &amount);
-                r.amount += amount;
-                printf("\n✔ Successfully deposited $%.2lf. New balance: $%.2lf\n", amount, r.amount);
+                fgets(input, sizeof(input), stdin);
+                if (strchr(input, ' ') != NULL)
+                {
+                    printf("\n✖ Input contains space. Please try again.\n");
+                    fclose(pf);
+                    fclose(tempFile);
+                    remove("temp.txt");
+                    return;
+                }
+                sscanf(input, "%lf", &amount);
+                if (amount < 0)
+                {
+                    printf("\n✖ Negative amounts are not allowed. Transaction canceled.\n");
+                }
+                else
+                {
+                    r.amount += amount;
+                    printf("\n✔ Successfully deposited $%.2lf. New balance: $%.2lf\n", amount, r.amount);
+                }
             }
             // Handle withdrawal
             else if (transactionType == 2)
             {
                 printf("\nEnter withdrawal amount: $");
-                scanf("%lf", &amount);
-                if (amount > r.amount)
+                fgets(input, sizeof(input), stdin);
+                if (strchr(input, ' ') != NULL)
+                {
+                    printf("\n✖ Input contains space. Please try again.\n");
+                    fclose(pf);
+                    fclose(tempFile);
+                    remove("temp.txt");
+                    return;
+                }
+                sscanf(input, "%lf", &amount);
+                if (amount < 0)
+                {
+                    printf("\n✖ Negative amounts are not allowed. Transaction canceled.\n");
+                }
+                else if (amount > r.amount)
                 {
                     printf("\n✖ Insufficient funds! Transaction canceled.\n");
                 }

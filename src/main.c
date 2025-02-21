@@ -4,7 +4,7 @@
 
 void mainMenu(struct User u)
 {
-    int option;
+    char option[10];
     system("clear");
     printf("\n\n\t\t======= ATM =======\n\n");
     printf("\n\t\t-->> Feel free to choose one of the options below <<--\n");
@@ -16,38 +16,51 @@ void mainMenu(struct User u)
     printf("\n\t\t[6]- Remove existing account\n");
     printf("\n\t\t[7]- Transfer ownership\n");
     printf("\n\t\t[8]- Exit\n");
-    scanf("%d", &option);
 
-    switch (option)
+    while (1)
     {
-    case 1:
+        printf("Enter your option: ");
+        fgets(option, sizeof(option), stdin);
+
+        if (strlen(option) != 2 || option[0] < '1' || option[0] > '8' || option[1] != '\n')
+        {
+            printf("Invalid input! Please enter a single digit number (1-8).\n");
+            continue;
+        }
+
+        break;
+    }
+
+    switch (option[0])
+    {
+    case '1':
         createNewAcc(u);
         break;
-    case 2:
+    case '2':
         updateAccount(u);
         break;
-    case 3:
-    checkSpecificAccount(u);
+    case '3':
+        checkSpecificAccount(u);
         break;
-    case 4:
+    case '4':
         checkAllAccounts(u);
         break;
-    case 5:
+    case '5':
         makeTransaction(u);
         break;
-    case 6:
+    case '6':
         removeAccount(u);
         break;
-    case 7:
+    case '7':
         transferAccountOwnership(u);
         break;
-    case 8:
+    case '8':
         exit(1);
         break;
     default:
         printf("Invalid operation!\n");
     }
-};
+}
 
 void registerUser(struct User *u)
 {
@@ -68,7 +81,8 @@ void registerUser(struct User *u)
     do {
         validUsername = 1;
         printf("\nEnter username: ");
-        scanf("%s", u->name);
+        fgets(u->name, sizeof(u->name), stdin);
+        u->name[strcspn(u->name, "\n")] = 0; // Remove newline character
 
         // Check if username is strictly made of alphabets and has at least 2 alphabets
         if (strlen(u->name) < 2)
@@ -89,8 +103,19 @@ void registerUser(struct User *u)
         }
     } while (!validUsername);
 
-    printf("\nEnter password: ");
-    scanf("%s", u->password);
+    int validPassword;
+    do {
+        validPassword = 1;
+        printf("\nEnter password: ");
+        fgets(u->password, sizeof(u->password), stdin);
+        u->password[strcspn(u->password, "\n")] = 0; // Remove newline character
+
+        if (strchr(u->password, ' ') != NULL)
+        {
+            printf("\n✖ Password cannot contain spaces. Try again.\n");
+            validPassword = 0;
+        }
+    } while (!validPassword);
 
     struct User tempUser;
     int lastId = -1;
@@ -137,9 +162,9 @@ void initMenu(struct User *u)
     while (1)
     {
         printf("Enter your option: ");
-        scanf("%s", option);
+        fgets(option, sizeof(option), stdin);
 
-        if (strlen(option) != 1 || option[0] < '1' || option[0] > '3')
+        if (strlen(option) != 2 || option[0] < '1' || option[0] > '3' || option[1] != '\n')
         {
             printf("Invalid input! Please enter a single digit number (1, 2, or 3).\n");
             continue;
